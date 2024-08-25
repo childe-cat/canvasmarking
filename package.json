@@ -2,7 +2,7 @@
   "name": "canvasmarking",
   "version": "1.0.0",
   "description": "利用canvas实现图片标注功能",
-  "main": "CanvasMarking.js",
+  "main": "CanvasMarking.ts",
   "author": "李雷",
   "license": "MIT"
 }

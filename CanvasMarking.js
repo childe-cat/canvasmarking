@@ -1,4 +1,0 @@
-class CanvasMarking {
-    constructor(canvas,) {
-    }
-}
