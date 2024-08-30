@@ -162,7 +162,6 @@ class CanvasMarking {
         this.ctx?.clearRect(0, 0, this.canvas.width, this.canvas.height)
         const width = this.drawWidth * this.scale;
         const height = this.drawHeight * this.scale;
-        console.log(this.offsetX, this.offsetY, width, height)
         this.ctx?.drawImage(this.image, this.offsetX, this.offsetY, width, height);
         this.markers.forEach((marker) => {
             this.drawMarker(marker)

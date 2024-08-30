@@ -95,7 +95,6 @@ class CanvasMarking {
         (_a = this.ctx) === null || _a === void 0 ? void 0 : _a.clearRect(0, 0, this.canvas.width, this.canvas.height);
         const width = this.drawWidth * this.scale;
         const height = this.drawHeight * this.scale;
-        console.log(this.offsetX, this.offsetY, width, height);
         (_b = this.ctx) === null || _b === void 0 ? void 0 : _b.drawImage(this.image, this.offsetX, this.offsetY, width, height);
         this.markers.forEach((marker) => {
             this.drawMarker(marker);
