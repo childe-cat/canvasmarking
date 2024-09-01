@@ -24,14 +24,17 @@ class CanvasMarking {
         }
         this.imageUrl = options.imageUrl;
         this.markers = options.markers;
-        this.markerType = options.markerType || 'circle';
+        this.markerType = options.markerType || 'circleHollow';
         this.markerColor = options.markerColor || '#FF0000';
         this.markerRadius = options.markerRadius || 4;
         this.markerLineWidth = options.markerLineWidth || 2;
         this.hasText = options.hasText || false;
         this.textDirection = options.textDirection || 'right';
         this.autoScaleMarker = options.autoScaleMarker || false;
+        this.isScale = options.isScale || true;
+        this.isDragging = options.isScale || true;
         this.imageLoadWay = options.imageLoadWay || 'none';
+        this.draggingDirection = options.draggingDirection || 'both';
         this.clickMethod = options.clickMethod;
         this.drawWidth = 0;
         this.drawHeight = 0;
@@ -41,10 +44,17 @@ class CanvasMarking {
      * 注册事件
      */
     initEvent() {
+        this.canvas.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+        });
         this.canvas.addEventListener('click', this.handleClick.bind(this));
-        this.canvas.addEventListener('wheel', this.handleWheel.bind(this));
+        if (this.isScale) {
+            this.canvas.addEventListener('wheel', this.handleWheel.bind(this));
+        }
         this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
-        this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
+        if (this.isDragging) {
+            this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
+        }
         this.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));
         this.canvas.addEventListener('mouseout', this.handleMouseOut.bind(this));
     }
@@ -107,22 +117,37 @@ class CanvasMarking {
     drawMarker(marker) {
         this.ctx.lineWidth = marker.markerLineWidth;
         this.ctx.strokeStyle = marker.markerColor;
+        this.ctx.fillStyle = marker.markerColor;
         this.ctx.beginPath();
-        const x = marker.x * this.scale + this.offsetX;
-        const y = marker.y * this.scale + this.offsetY;
+        const x = marker.position[0][0] * this.scale + this.offsetX;
+        const y = marker.position[0][1] * this.scale + this.offsetY;
         const r = this.autoScaleMarker ? marker.markerRadius * this.scale : marker.markerRadius;
         //画笔类型
         switch (marker.markerType) {
-            case 'circle':
+            case 'circleHollow':
                 this.ctx.arc(x, y, r, 0, Math.PI * 2);
                 break;
-            case 'triangle':
+            case 'triangleHollow':
                 this.ctx.moveTo(x, y - r);
                 this.ctx.lineTo(x - r, y + r);
                 this.ctx.lineTo(x + r, y + r);
                 break;
-            case 'square':
+            case 'squareHollow':
                 this.ctx.rect(x - r, y - r, r * 2, r * 2);
+                break;
+            case 'circleSolid':
+                this.ctx.arc(x, y, r, 0, Math.PI * 2);
+                this.ctx.fill();
+                break;
+            case 'triangleSolid':
+                this.ctx.moveTo(x, y - r);
+                this.ctx.lineTo(x - r, y + r);
+                this.ctx.lineTo(x + r, y + r);
+                this.ctx.fill();
+                break;
+            case 'squareSolid':
+                this.ctx.rect(x - r, y - r, r * 2, r * 2);
+                this.ctx.fill();
                 break;
             default:
                 this.ctx.arc(x, y, r, 0, Math.PI * 2);
@@ -163,10 +188,10 @@ class CanvasMarking {
             const scaleY = this.canvas.height / rect.height;
             const x = ((e.clientX - rect.left) * scaleX - this.offsetX) / this.scale;
             const y = ((e.clientY - rect.top) * scaleY - this.offsetY) / this.scale;
+            const position = [[x, y]];
             const newMarker = {
-                x,
-                y,
-                uuid: '',
+                position: position,
+                uuid: this.generateUUID(),
                 name: '',
                 markerType: this.markerType,
                 markerRadius: this.markerRadius,
@@ -175,6 +200,9 @@ class CanvasMarking {
                 options: {}
             };
             this.clickMethod && this.clickMethod(newMarker);
+            if (this.markers.findIndex((marker) => marker.uuid === newMarker.uuid) >= 0) {
+                throw new Error('uuid重复');
+            }
             this.markers.push(newMarker);
             this.drawImage();
         }
@@ -205,7 +233,15 @@ class CanvasMarking {
      * 鼠标按下监听事件，获取按下鼠标位置
      */
     handleMouseDown(e) {
-        this.draggingFlag = true;
+        if (this.draggingDirection === 'both') {
+            this.draggingFlag = true;
+        }
+        else if (this.draggingDirection === 'left' && e.buttons === 1) {
+            this.draggingFlag = true;
+        }
+        else if (this.draggingDirection === 'right' && e.buttons === 2) {
+            this.draggingFlag = true;
+        }
         this.lastX = e.clientX;
         this.lastY = e.clientY;
     }
@@ -267,5 +303,14 @@ class CanvasMarking {
      */
     getMarkers() {
         return this.markers;
+    }
+    /**
+     * 生成uuid
+     */
+    generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            const r = (Math.random() * 16) | 0, v = c === 'x' ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+        });
     }
 }

@@ -1,5 +1,5 @@
 # CanvasMarking
-### canvas轻量图片标注功能
+### canvas轻量图片标注功能，暂时只支持圆形，正方形，三角形标记点
 ## 1.引入CanvasMarking.js文件
 ```js
 <script src="CanvasMarking.js"></script>
@@ -48,9 +48,12 @@ canvas.deleteMarker({value, name});//删除指定标注点
 
 - **markerType**: `string`  
   标注的类型，默认为 "circle"，可选值：
-    - **circle**: 圆形标记点
-    - **triangle**: 圆形标记点
-    - **square**: 正方形标记点
+    - **circleHollow**: 圆形空心标记点
+    - **triangleHollow**: 三角形空心标记点
+    - **squareHollow**: 正方形空心标记点
+  - **circleSolid**: 圆形实心标记点
+  - **triangleSolid**: 三角形实心标记点
+  - **squareSolid**: 正方形实心标记点
 
 
 - **markerColor**: `string`  
@@ -77,11 +80,31 @@ canvas.deleteMarker({value, name});//删除指定标注点
   标记是否跟随图片缩放，默认为 `false`。 
 
 
+- **isScale**: `boolean`  
+  是否开启滚落缩放，默认为 `true`。
+
+
+- **isDragging**: `boolean`  
+  是否开启移动拖拽，默认为 `true`。
+
+
+- **draggingButton**: `boolean`  
+  拖拽按键，默认为 `both`，鼠标左右键都可以拖拽图片，可选值：
+  - **both**: 双键
+  - **left**: 左键
+  - **right**: 右键
+
+
 - **clickMethod**: `function`  
   点击标注时触发的额外事件处理方法或函数，用以设置标注信息。
 
 ### 示例用法
 ```js
+/**
+ * 点击标注时触发的额外事件处理方法或函数，用以设置标注信息。
+ * 可以给 marker 修改属性，如 name, uuid, option 等。
+ * @param marker
+ */
 function handleMarkerClick(marker) {
     marker.name = 'Marker Name';
     marker.uuid = '1234567890';
