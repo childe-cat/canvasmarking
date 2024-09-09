@@ -46,14 +46,21 @@ canvas.deleteMarker({value, name});//删除指定标注点
     - **none**: 图片居中显示，大小超出canvas大小时，等比例缩小，直到图片能完全显示
     - **fill**: 图片平铺canvas画框
 
+
+- **artMethod**: `string`
+  绘画方式,默认为 "single""，可选值：
+    - **single**: 单击进行标注
+    - **downDrag**: 鼠标按住拖拽进行标注，拖拽结束后，自动完成标注，按键与draggingButton取反，draggingButton为both时，强制single模式
+
+
 - **markerType**: `string`  
   标注的类型，默认为 "circle"，可选值：
-    - **circleHollow**: 圆形空心标记点
-    - **triangleHollow**: 三角形空心标记点
-    - **squareHollow**: 正方形空心标记点
+    - **circleHollow**: 圆形空心标记点,single模式为正圆，artMethod为downDrag时可绘制椭圆
+    - **triangleHollow**: 三角形空心标记点，single模式为等边三角形，artMethod为downDrag时可绘制等腰三角形
+    - **squareHollow**: 方形空心标记点，single模式为正方形，artMethod为downDrag时可绘制长方形
   - **circleSolid**: 圆形实心标记点
   - **triangleSolid**: 三角形实心标记点
-  - **squareSolid**: 正方形实心标记点
+  - **squareSolid**: 方形实心标记点
 
 
 - **markerColor**: `string`  

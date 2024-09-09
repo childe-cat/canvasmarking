@@ -2,6 +2,7 @@
  * 画笔类
  * @param imageUrl 图片地址
  * @param markers 标注列表
+ * @param artMethod 绘画方式
  * @param markerType 标注类型
  * @param markerColor 标注颜色
  * @param markerRadius 标注半径
@@ -18,6 +19,7 @@
 interface Options {
     imageUrl: string;
     markers: Array<marker>;
+    artMethod: string;
     markerType: string;
     markerColor: string
     markerRadius: number;
@@ -32,15 +34,24 @@ interface Options {
     clickMethod: Function;
 }
 
+/**
+ * 标注对象
+ */
 interface marker {
     position:number[][],
     uuid: string;
     name: string | null;
     markerType: string;
+    artMethod: string;
     markerColor: string;
-    markerRadius: number;
+    markerRadius: number[];
     markerLineWidth: number;
     options: any
+}
+
+interface drawMarker{
+    positionOld:number[],
+    positionNew:number[]
 }
 
 class CanvasMarking {
@@ -62,7 +73,7 @@ class CanvasMarking {
     private markers: Array<marker>;
     private markerType: string;
     private markerColor: string;
-    private markerRadius: number;
+    private markerRadius: number[];
     private markerLineWidth: number;
     private autoScaleMarker: boolean;
     private image!: HTMLImageElement;
@@ -75,6 +86,9 @@ class CanvasMarking {
     private isScale: boolean;
     private isDragging: boolean;
     private draggingButton: string;
+    private artMethod: string;
+    private casualMarkerId : string | null = null;
+    private casualMarker: drawMarker | null = null;
 
     /**
      * 画笔类
@@ -92,9 +106,16 @@ class CanvasMarking {
         }
         this.imageUrl = options.imageUrl;
         this.markers = options.markers;
+        this.artMethod = options.artMethod || 'single';
+        if(this.artMethod === 'downDrag'){
+            this.casualMarker = {
+                positionOld: [0,0],
+                positionNew: [0,0]
+            }
+        }
         this.markerType = options.markerType || 'circleHollow';
         this.markerColor = options.markerColor || '#FF0000';
-        this.markerRadius = options.markerRadius || 4;
+        this.markerRadius = [options.markerRadius || 4];
         this.markerLineWidth = options.markerLineWidth || 2;
         this.hasText = options.hasText || false;
         this.textDirection = options.textDirection || 'right';
@@ -197,32 +218,70 @@ class CanvasMarking {
         this.ctx.beginPath()
         const x = marker.position[0][0] * this.scale + this.offsetX;
         const y = marker.position[0][1] * this.scale + this.offsetY;
-        const r = this.autoScaleMarker ? marker.markerRadius * this.scale : marker.markerRadius;
+        const r = this.autoScaleMarker ? marker.markerRadius[0] * this.scale : marker.markerRadius[0];
+        const r2 = this.autoScaleMarker ? marker.markerRadius[1] * this.scale : marker.markerRadius[1];
         //画笔类型
         switch (marker.markerType) {
             case 'circleHollow':
-                this.ctx.arc(x, y, r, 0, Math.PI * 2);
+                if(this.artMethod==='single'){
+                    this.ctx.arc(x, y, r, 0, Math.PI * 2);
+                }else if(this.artMethod==='downDrag'){
+                    this.ctx.ellipse(x, y, r, r2, 0, 0, Math.PI * 2 )
+                }
                 break;
             case 'triangleHollow':
-                this.ctx.moveTo(x, y - r);
-                this.ctx.lineTo(x - r, y + r);
-                this.ctx.lineTo(x + r, y + r);
+                if(this.artMethod === 'single'){
+                    this.ctx.moveTo(x, y - r);
+                    this.ctx.lineTo(x - r, y + r);
+                    this.ctx.lineTo(x + r, y + r);
+                }else if(this.artMethod === 'downDrag'){
+                    marker.position.forEach((p,i)=>{
+                        if(i===0){
+                            this.ctx.moveTo(p[0] * this.scale + this.offsetX, p[1] * this.scale + this.offsetY);
+                        }else{
+                            this.ctx.lineTo(p[0] * this.scale + this.offsetX, p[1] * this.scale + this.offsetY);
+                        }
+                    })
+                }
                 break;
             case 'squareHollow':
-                this.ctx.rect(x - r, y - r, r * 2, r * 2)
+                if(this.artMethod==='single'){
+                    this.ctx.rect(x - r, y - r, r * 2, r * 2)
+                }else if(this.artMethod==='downDrag'){
+                    this.ctx.rect(x, y, r * 2, r2 * 2)
+                }
                 break;
             case 'circleSolid':
-                this.ctx.arc(x, y, r, 0, Math.PI * 2);
+                if(this.artMethod==='single'){
+                    this.ctx.arc(x, y, r, 0, Math.PI * 2);
+                }else if(this.artMethod==='downDrag'){
+                    this.ctx.ellipse(x, y, r, r2, 0, 0, Math.PI * 2 )
+                }
                 this.ctx.fill();
                 break;
             case 'triangleSolid':
-                this.ctx.moveTo(x, y - r);
-                this.ctx.lineTo(x - r, y + r);
-                this.ctx.lineTo(x + r, y + r);
+                if(this.artMethod === 'single'){
+                    this.ctx.moveTo(x, y - r);
+                    this.ctx.lineTo(x - r, y + r);
+                    this.ctx.lineTo(x + r, y + r);
+                }else if(this.artMethod === 'downDrag'){
+                    marker.position.forEach((p,i)=>{
+                        if(i===0){
+                            this.ctx.moveTo(p[0] * this.scale + this.offsetX, p[1] * this.scale + this.offsetY);
+                        }else{
+                            this.ctx.lineTo(p[0] * this.scale + this.offsetX, p[1] * this.scale + this.offsetY);
+                        }
+                    })
+                }
                 this.ctx.fill();
                 break;
             case 'squareSolid':
-                this.ctx.rect(x - r, y - r, r * 2, r * 2)
+                if(this.artMethod==='single'){
+                    this.ctx.rect(x - r, y - r, r * 2, r * 2)
+                }else if(this.artMethod==='downDrag'){
+                    this.ctx.rect(x, y, r * 2, r2 * 2)
+                }
+
                 this.ctx.fill();
                 break;
             default:
@@ -254,17 +313,22 @@ class CanvasMarking {
         }
     }
 
+    getScalePosition(e: MouseEvent): {x: number, y: number} {
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        const x = ((e.clientX - rect.left) * scaleX - this.offsetX) / this.scale;
+        const y = ((e.clientY - rect.top) * scaleY - this.offsetY) / this.scale;
+        return {x,y};
+    }
+
     /**
      * 鼠标点击监听事件，新增一个标注
      * @param e
      */
     handleClick(e: MouseEvent) {
         if (e.target === this.canvas && this.clickFlag) {
-            const rect = this.canvas.getBoundingClientRect();
-            const scaleX = this.canvas.width / rect.width;
-            const scaleY = this.canvas.height / rect.height;
-            const x = ((e.clientX - rect.left) * scaleX - this.offsetX) / this.scale;
-            const y = ((e.clientY - rect.top) * scaleY - this.offsetY) / this.scale;
+            const {x, y} = this.getScalePosition(e);
             const position = [[x, y]];
             const newMarker: marker = {
                 position:position,
@@ -274,6 +338,7 @@ class CanvasMarking {
                 markerRadius: this.markerRadius,
                 markerColor: this.markerColor,
                 markerLineWidth: this.markerLineWidth,
+                artMethod:'single',
                 options: {}
             };
             this.clickMethod && this.clickMethod(newMarker);
@@ -312,13 +377,26 @@ class CanvasMarking {
      * 鼠标按下监听事件，获取按下鼠标位置
      */
     handleMouseDown(e: MouseEvent) {
-        if(this.draggingButton === 'both'){
-            this.draggingFlag = true;
-        }else if(this.draggingButton === 'left' && e.buttons === 1){
-            this.draggingFlag = true;
-        }else if(this.draggingButton === 'right' && e.buttons === 2){
-            this.draggingFlag = true;
+        switch (this.draggingButton) {
+            case 'both':
+                this.draggingFlag = true;
+                break;
+            case 'left':
+                this.draggingFlag = e.buttons === 1;
+                break;
+            case 'right':
+                this.draggingFlag = e.buttons === 2;
+                break;
         }
+        //拖拽生成标注，获取初始位置
+        if(!this.draggingFlag && this.artMethod === 'downDrag'){
+            const {x, y} = this.getScalePosition(e);
+            this.casualMarker = {
+                positionOld: [x,y],
+                positionNew: [x,y]
+            }
+        }
+
         this.lastX = e.clientX;
         this.lastY = e.clientY;
     }
@@ -327,14 +405,7 @@ class CanvasMarking {
      * 鼠标移动监听事件，拖动canvas图像
      */
     handleMouseMove(e: MouseEvent) {
-        if (this.draggingFlag) {
-            this.clickFlag = false;
-            const x = e.clientX - this.lastX;
-            const y = e.clientY - this.lastY;
-            this.offsetX += x;
-            this.offsetY += y;
-            this.lastX = e.clientX;
-            this.lastY = e.clientY;
+        const moveAnimate = () => {
             if (this.animationFrameId !== null) {
                 cancelAnimationFrame(this.animationFrameId);
             }
@@ -345,6 +416,57 @@ class CanvasMarking {
                 this.animationFrameId = null; // 重置动画帧ID
             });
         }
+        if (this.draggingFlag) {
+            this.clickFlag = false;
+            const x = e.clientX - this.lastX;
+            const y = e.clientY - this.lastY;
+            this.offsetX += x;
+            this.offsetY += y;
+            this.lastX = e.clientX;
+            this.lastY = e.clientY;
+            moveAnimate();
+        }else{
+            if(this.artMethod === 'downDrag' && ((this.draggingButton === 'left' && e.buttons === 2) || (this.draggingButton === 'right' && e.buttons === 1))){
+                this.clickFlag = false;
+                const {x, y} = this.getScalePosition(e);
+                console.log(x,y)
+                this.casualMarker!.positionNew = [x,y]
+                if(x<this.casualMarker!.positionOld[0] || y<this.casualMarker!.positionOld[1]){
+                    throw new Error('坐标错误,结束点坐标不应该小于开始点坐标')
+                }
+                const position : number[][] = [[this.casualMarker!.positionOld[0],this.casualMarker!.positionOld[1]]]
+                const markerRadius = [(this.casualMarker!.positionNew[0] - this.casualMarker!.positionOld[0]) / 2,(this.casualMarker!.positionNew[1] - this.casualMarker!.positionOld[1]) / 2]
+                if(this.markerType === 'triangleHollow' || this.markerType === 'triangleSolid'){
+                    const xr = this.casualMarker!.positionNew[0] - this.casualMarker!.positionOld[0]
+                    position.push([this.casualMarker!.positionNew[0],this.casualMarker!.positionNew[1]])
+                    position.push([this.casualMarker!.positionOld[0] - xr,this.casualMarker!.positionNew[1]])
+                }
+                //配置标注
+                if(this.casualMarkerId === null){
+                    this.casualMarkerId = this.generateUUID()
+                    const newMarker:marker = {
+                        position:position,
+                        uuid: this.casualMarkerId,
+                        name: '',
+                        markerType: this.markerType,
+                        artMethod:'downDrag',
+                        markerRadius: markerRadius,
+                        markerColor: this.markerColor,
+                        markerLineWidth: this.markerLineWidth,
+                        options: {}
+                    }
+                    this.markers.push(newMarker);
+                }else{
+                    this.markers.forEach(marker=>{
+                        if(marker.uuid === this.casualMarkerId){
+                            marker.position = position
+                            marker.markerRadius = markerRadius
+                        }
+                    })
+                }
+                this.drawImage();
+            }
+        }
     }
 
     /**
@@ -352,6 +474,11 @@ class CanvasMarking {
      */
     handleMouseUp() {
         this.draggingFlag = false;
+        if(this.casualMarkerId != null){
+            this.clickMethod && this.clickMethod(this.markers.filter(marker=>marker.uuid === this.casualMarkerId)[0]);
+            this.drawImage();
+            this.casualMarkerId = null;
+        }
         setTimeout(() => {
             this.clickFlag = true;
         }, 1)
