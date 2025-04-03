@@ -138,18 +138,16 @@ const options = {
 }
 
 /**
- * 导出所有绘制区域图片
+ * 导出绘制区域图片
  */
 markers.forEach((item,i)=>{
-  if(i===markers.length-1){
-    const rect = {
-      x:item.position[0][0],
-      y:item.position[0][1],
-      width:item.markerRadius[0],
-      height:item.markerRadius[1],
-    }
-    const base64 = canvas.exportDrawImage(rect)
+  const rect = {
+    x:item.position[0][0],
+    y:item.position[0][1],
+    width:item.markerRadius[0],
+    height:item.markerRadius[1],
   }
+  console.log(canvas.exportDrawImage(rect))
 
 })
 ```
