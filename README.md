@@ -27,6 +27,17 @@ canvas.deleteAll();
  * param {string} name? 标记点名称,默认为uuid,可选自定义marker.options中任意值
  */
 canvas.deleteMarker({value, name});//删除指定标注点
+
+/**
+ * 导出图片
+ * @param exportMode 导出模式，可选值：'hasImage'、'noImage'，默认为'hasImage'
+ */
+canvas.exportImage(exportMode);//删除指定标注点
+
+/**
+ * param rect 
+ */
+canvas.exportDrawImage(rect);//删除指定标注点
 ```
 
 ## 4. `options` 参数
@@ -117,12 +128,29 @@ function handleMarkerClick(marker) {
     marker.uuid = '1234567890';
     marker.option = {}
 }
+
 let markers = [];
 let imageUrl = '';
 const options = {
-    imageUrl: imageUrl,
-    markers: markers,
-    clickMethod: handleMarkerClick
+  imageUrl: imageUrl,
+  markers: markers,
+  clickMethod: handleMarkerClick
+}
+
+/**
+ * 导出所有绘制区域图片
+ */
+markers.forEach((item,i)=>{
+  if(i===markers.length-1){
+    const rect = {
+      x:item.position[0][0],
+      y:item.position[0][1],
+      width:item.markerRadius[0],
+      height:item.markerRadius[1],
     }
+    const base64 = canvas.exportDrawImage(rect)
+  }
+
+})
 ```
     
