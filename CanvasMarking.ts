@@ -369,9 +369,9 @@ class CanvasMarking {
                 options: {}
             };
             this.clickMethod && this.clickMethod(newMarker);
-            if(this.markers.findIndex((marker) => marker.uuid === newMarker.uuid)>=0){
-                throw new Error('uuid重复')
-            }
+            // if(this.markers.findIndex((marker) => marker.uuid === newMarker.uuid)>=0){
+            //     throw new Error('uuid重复')
+            // }
             this.markers.push(newMarker);
             this.drawImage();
         }

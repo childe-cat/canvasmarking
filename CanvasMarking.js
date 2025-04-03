@@ -277,7 +277,7 @@ var CanvasMarking = /** @class */ (function () {
                 return;
             }
             var position = [[x, y]];
-            var newMarker_1 = {
+            var newMarker = {
                 position: position,
                 uuid: this.generateUUID(),
                 name: '',
@@ -288,11 +288,11 @@ var CanvasMarking = /** @class */ (function () {
                 artMethod: 'single',
                 options: {}
             };
-            this.clickMethod && this.clickMethod(newMarker_1);
-            if (this.markers.findIndex(function (marker) { return marker.uuid === newMarker_1.uuid; }) >= 0) {
-                throw new Error('uuid重复');
-            }
-            this.markers.push(newMarker_1);
+            this.clickMethod && this.clickMethod(newMarker);
+            // if(this.markers.findIndex((marker) => marker.uuid === newMarker.uuid)>=0){
+            //     throw new Error('uuid重复')
+            // }
+            this.markers.push(newMarker);
             this.drawImage();
         }
     };
@@ -482,7 +482,6 @@ var CanvasMarking = /** @class */ (function () {
     CanvasMarking.prototype.exportImage = function (exportMode) {
         var _this = this;
         if (exportMode === 'noImage') {
-            console.log('进入');
             var newCanvas = document.createElement('canvas');
             newCanvas.width = this.canvas.width;
             newCanvas.height = this.canvas.height;
@@ -490,7 +489,6 @@ var CanvasMarking = /** @class */ (function () {
             this.markers.forEach(function (marker) {
                 _this.drawMarker(marker, newCtx_1);
             });
-            console.log(newCanvas);
             return newCanvas.toDataURL("image/png");
         }
         return this.canvas.toDataURL("image/png");
