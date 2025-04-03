@@ -1,5 +1,5 @@
 # CanvasMarking
-### canvas轻量图片标注功能，暂时只支持圆形，正方形，三角形标记点
+### canvas轻量图片标注功能
 ## 1.引入CanvasMarking.js文件
 ```js
 <script src="CanvasMarking.js"></script>
