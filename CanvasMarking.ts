@@ -82,7 +82,6 @@ class CanvasMarking {
     private drawHeight: number;
     private imageLoadWay: string;
     private todaySMarker:marker | null = null;
-    private timeInterval:number | null = null;
 
     private animationFrameId: number | null = null;
     private clickMethod: Function;
@@ -563,7 +562,7 @@ class CanvasMarking {
 
     /**
      * 导出图片
-     * @param exportMode 导出模式，可选值：'hasImage'、'noImage'，默认为'hasImage'
+     * @param exportMode 导出模式，可选值：'hasImage'、'noImage'，默认为'hasImage',是否包含标注背景图片
      */
     exportImage(exportMode?:string){
         if(exportMode! === 'noImage'){

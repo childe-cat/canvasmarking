@@ -138,7 +138,7 @@ const options = {
 }
 
 /**
- * 导出绘制区域图片
+ * 导出绘制区域图片（矩形），示例中markers仅包含矩形，使用时注意
  */
 markers.forEach((item,i)=>{
   const rect = {
